@@ -33,3 +33,11 @@ setwd("~/jour472/data_journalism_2024_fall")
 install.packages("tidyverse")
 library(tidyverse)
 ```
+
+### How to print in R 
+
+```{r} 
+
+print("Hello World")
+
+```
