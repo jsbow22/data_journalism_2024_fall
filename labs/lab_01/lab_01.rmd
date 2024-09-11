@@ -34,6 +34,7 @@ We're going to load the slice of WinRed contribution data from West Virginia, wh
 **Task** Using the example from the pre_lab, write code to load the RDS file and assign it to a good variable name.
 
 ```{r}
+west_virginia_data <- read_rds("lab_01.rds")
 ```
 
 ## Examine Data
@@ -42,48 +43,80 @@ We're going to load the slice of WinRed contribution data from West Virginia, wh
 
 **Q1** How many rows and columns does this dataframe have?
 
-**A1**
+**There are 40,441 rows and 24 columns**
 
 ```{r}
-
+glimpse(west_virginia_data)
 ```
 
 ## Answer questions
 
 **Q2** Which West Virginia city provided the largest number of contributions? How many?
 
-**A2**
+**Charleston, with 3,226 contributions**
 
 ```{r}
+west_virginia_data |>
+  group_by(city) |>
+  summarise(
+    count_contribs = n(),
+    total_amount = sum(amount),
+    mean_amount = mean(amount),
+    median_amount = median(amount),
+    min_amount = min(amount),
+    max_amount = max(amount)
+  ) |>
+  arrange(desc(count_contribs))
 ```
 
 **Q3** Which West Virginia cities accounted for the fewest contributions? How many of them, roughly speaking?
 
-**A3**
+**There are 63 cities, including Allen Junction, Alum Bridge, Bridgeport, and more, that have just one contribution**
 
 ```{r}
 ```
 
 **Q4** What's your best educated guess to explain why the city identified in question 2 had more contributions compared to the cities identified in question 3? Hint: you won't find the answer in the data, you'll need to do some quick web research. You do not need to write any code for this question, so no codeblock is provided.
 
-**A4**
+**The difference is the population of the cities; the most donations come from Charleston, which is West Virginia's most populous city.**
 
 **Q5** What recipient got the largest total amount of money? How many contributions did they receive and what was the average donation?
 
-**A5**
+**The Trump National Committee gathered the most donations with 14,063.The amount was $463,944.40. **
 
 ```{r}
+west_virginia_data |>
+  group_by(memo_text) |>
+  summarise(
+    count_contribs = n(),
+    total_amount = sum(amount),
+    mean_amount = mean(amount),
+    median_amount = median(amount)
+  ) |>
+  arrange(desc(count_contribs))
 ```
 
 **Q6** What is that top recipient and what explains its popularity? Hint: this will require web research, you won't be able to answer this purely from the data set. You do not need to write any code for this question, so no codeblock is provided.
 
-**A6**
+**It is a joint fundraising committee for Republican presidential candidate Donald Trump. It was founded by Donald Trump himself; a national politican founding their own JFC explains why it is so popular.**
 
 **Q7**. Using the answer from A5 as a starting point, produce a summary table that has the following information for each recipient: \* count of contributions \* total amount of all contributions \* the average contribution amount \* the median contribution amount \* the smallest contribution amount \* the largest contribution amount
 
 Store it as a variable object called `wv_summary` so that you can examine it with the data viewer. What newsworthy nuggets jump out at you that you could imagine dropping into a news story? Write a few summary sentences with overall findings.
 
-**A7**.
+**One of the most interesting findings that I came up with looking at the data had to do with maximum donation amounts. Two cities, Charles Town and Charleston, received $10,000 donations, which dwarfed the donations from other cities. Also, it's most likely an error, but I want to figure out the two states that are listed as having negative total amounts. One more thing I think could be newsworthy is why some cities are double counted in record keeping.  **.
 
 ```{r}
+west_virginia_table <- 
+west_virginia_data |>
+  group_by(city) |>
+  summarise(
+    count_contribs = n(),
+    total_amount = sum(amount),
+    mean_amount = mean(amount),
+    median_amount = median(amount),
+    min_amount = min(amount),
+    max_amount = max(amount)
+  ) |>
+  arrange(desc(total_amount))
 ```
