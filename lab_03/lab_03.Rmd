@@ -34,6 +34,8 @@ md_contribs <- read_rds("data/lab_03.rds")
 You'll need to fix one issue with the column names using janitor. Write a code block to do that, making sure that you save the results to the same dataframe.
 
 ```{r}
+md_contribs <- md_contribs |> 
+  clean_names()
 
 ```
 
@@ -47,6 +49,16 @@ Note: To answer this question, you'll need to see every variation of the "contri
 A1:
 
 ```{r}
+
+md_contribs |> 
+  group_by(contributor_city) |> 
+  summarise(contributions = n()) |> 
+  mutate(contributor_city = case_when(
+    contributor_city == "BALRIMORE" | contributor_city == "BLATIMORE" ~ "BALTIMORE",
+    TRUE ~ contributor_city
+  ))
+arrange(desc(contributions()) |>
+ 
 
 ```
 
