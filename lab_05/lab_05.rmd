@@ -25,42 +25,68 @@ First, load two CSV contribution files in the `data` folder, one each for donati
 
 ```{r}
 # load the Harris contribution data files and combine them
+july_harris <- read_csv("data/july_harris.csv")
+august_harris <- read_csv("data/august_harris.csv") |>
+mutate(date = ymd(date))
+  harris_donations_combined <- bind_rows(list(july_harris, august_harris)) |> 
+  mutate(zip = as.character(zip)) 
 ```
 
 Next, let's read in the new voters (people who registered in 2024):
 
 ```{r}
 # load the new voters data
+new_voters <- read_csv("data/new_voters.csv")
 ```
 
 Next join the Harris donations to the voter data. Remember, people's names are common, __so you'll want to use name columns and address information__. You'll need to figure out which columns to use from both dataframes. The new_voters data has both a single Address column and various parts of the address, such as HouseNumber. Make a plan for picking your join columns - try out some combinations - and save the results to a new dataframe.
 
 ```{r}
-# join the combined Harris file to the new voters
-# you will need to determine what columns to use
+contributions_from_new_voters <- harris_donations_combined |> 
+  inner_join(new_voters, 
+             join_by(
+               last_name == LastName, 
+               first_name == FirstName, 
+               middle_name == MiddleName, 
+               address_one == Address, 
+               city == ResidentialCity
+             ))
 ```
 
 ## Answer questions
 
 Q1. Explain why you used the columns you did to make the join, and why that result is better than other ways you tried. Are there any problems with the join you made, such as the possibility of false positives?
 
-A1. 
+A1. I chose these because these seemed like the most important to combine. There was a lot of extraneous information in the new voters file, including LOTS of vcariations of address. I boiled it down to name, city, address. 
 
 Q2. Based on your join, how many donations to Harris have come from people who registered this year? How many unique people does that represent, and which donors have given the largest _number_ of donations since July 20? 
 
-A2. 
+A2. 52 donations have come from people who registered this year. Since July 20, there have been 37 unique donors. The two individuals with the largest number of contributions are Veronica Barzelatto and Rilwan Johnson.
 
 ```{r}
+contributions_from_new_voters |> 
+  filter(date > mdy("07-20-2024")) |> 
+  group_by(last_name, first_name, address_one, city) |> 
+  summarise(contributions = n()) |> 
+  arrange(desc(contributions))
+
+
 ```
 
 Q3. What are the party and gender breakdowns of those donors? How many donations has Harris gotten from non-Democrats?
 
-A3. 
+A3. There are 45 Dem. donors, 1 Lib., one Rep., 5 unaffiliated, making 7 donations from non-democrats. There are 27 females and 23 males (and two NA)
 
 ```{r}
-
+contributions_from_new_voters |> 
+  group_by(Party) |> 
+  summarise(contributors = n())
 ```
-
+```{r} 
+contributions_from_new_voters |> 
+  group_by(Gender) |> 
+  summarise(contributors = n())
+```
 Q4. Choose your own adventure: I want you to come up with a question you could ask of one of the dataframes we've created for this lab. It could involve just the new voters, or the donors or the joined dataframe, but it cannot be a variation of a previous question (so, for example, you can't ask, "How many Republicans have given to Harris"). First write the question and then try to answer it by writing code. If you're not sure of the exact code, try googling (or ask me for advice) but, at a minimum, describe what you think you'd have to do to answer it and what the results would look like. That can help.
 
-A4:
+A4:I think that one question I would ask is how many of the donors to Harris were Republican women. This is especially pertinent considering the narrative that Trump has lost support among women, even Republicans. I think to solve that I would need to find a way to first select just women, or just Republicans, and the filter for the opposite.
