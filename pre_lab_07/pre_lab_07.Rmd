@@ -33,7 +33,7 @@ To use the API, you need to [an API key from the Census Bureau](https://api.cens
 **Task** Replace YOUR KEY HERE in the codeblock below with your Census API Key (leave the quotemarks).
 
 ```{r echo=FALSE}
-#census_api_key("YOUR KEY HERE", install=TRUE)
+#census_api_key("903a63fa0988fb12a94c244701889b5993fa9d04", install=TRUE)
 ```
 
 The `install=TRUE` part saves your key for future use.
@@ -123,7 +123,7 @@ We can measure this by median household income. That variable is `B19013_001`, s
 
 ### Task 5: Answer Questions with ACS Data
 
-**Task** Run the following codeblock to find the Maryland county with the highest median household income and put the answer below. **Answer**
+**Task** Run the following codeblock to find the Maryland county with the highest median household income and put the answer below. **Howard County**
 
 ```{r}
 md <- get_acs(geography = "county",
@@ -156,9 +156,9 @@ md |>
 
 As you can see, some of the error bars are quite wide. Some are narrow. But if the bars overlap, it means the difference between the two counties is within the margin of error, and the differences aren't statistically significant.
 
-Is the difference between Calvert and Montgomery significant? **Answer**
+Is the difference between Calvert and Montgomery significant? **No**
 
-Is the difference between Howard and everyone else significant? **Answer**
+Is the difference between Howard and everyone else significant? **Yes**
 
 ### Task 7: Joining Multiple Years Together
 
@@ -182,7 +182,7 @@ md10 <- get_acs(geography = "county",
 
 What we're going to do next is a lot, but each step is simple. We're going to join the data together, so each county has one line of data. Then we're going to rename some fields that repeat. Then we're going to calculate the minimum and maximum value of the estimate using the margin of error. That'll help us later. After that, we're going to calculate a percent change and sort it by that change.
 
-**Task** Run the following codeblock to join the data, rename the population estimates and then calculate the values we need. Notice how we select *after* we do the initial calculations so we only see the columns we're interested in (and drop the ones we don't want to see). Also note how the select function has the minus sign (-) in front of some columns? That means we don't want to see them in our result. Did any counties see their median incomes fall from 2010-2020? Is the change outside the margin of error for both? **Answer**
+**Task** Run the following codeblock to join the data, rename the population estimates and then calculate the values we need. Notice how we select *after* we do the initial calculations so we only see the columns we're interested in (and drop the ones we don't want to see). Also note how the select function has the minus sign (-) in front of some columns? That means we don't want to see them in our result. Did any counties see their median incomes fall from 2010-2020? Is the change outside the margin of error for both? **Looking through the data, it doesn't look like any of the counties saw their median income fall.**
 
 ```{r}
 md10 |>
@@ -224,7 +224,7 @@ Note that the year is 2019, which is the latest year that we have data from ever
 
 Of the 20 zip codes with the largest amounts, which ones have estimated median household incomes of less than \$50,000?
 
-**Answer**
+**One of them: 21202**
 
 ```{r}
 md_zipcodes <- get_acs(geography="zcta", variables = "B19013_001", state='MD', year=2019)
@@ -232,4 +232,9 @@ md_zips_with_acs <- top_zips |> left_join(md_zipcodes, join_by(zip5==GEOID))
 md_zips_with_acs <- md_zips_with_acs |> mutate(min=(estimate-moe), max=(estimate+moe))
 ```
 
-**Task** Arrange md_zips_with_acs by estimate showing the highest median household income first. What questions do you have about these top zip codes? **Answer**
+**Task** Arrange md_zips_with_acs by estimate showing the highest median household income first. What questions do you have about these top zip codes? **My biggest question is how close they are to each other geographically and what the demographic makeup of those zip codes is.**
+
+```{r} 
+md_zips_with_acs |> 
+  arrange(desc(estimate))
+```
