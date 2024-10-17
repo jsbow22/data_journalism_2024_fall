@@ -18,7 +18,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Turn off scientific notation
 options(scipen=999)
-
+library(tidyverse)
+library(lubridate)
+library(janitor)
 # Load the tidyverse and any other libraries you'll need
 
 ```
@@ -50,22 +52,30 @@ You will need to read in and clean up the data so that it can be used for analys
 
 ```{r}
 # Party registrations
-
+new_reg_2024 <- read_csv("data/new_reg.csv")
+new_reg_2024
 ```
 
 ```{r}
 # Removals
-
+rem_2024 <- read_csv("data/removals.csv")
+rem_2024
 ```
 
 ```{r}
 # Changes
-
+changes_2024 <- read_csv("data/current_and_changes.csv") |>
+  clean_names() |> 
+  select(county, address_changes, name_changes, dem_from, rep_from, nlm_from, lib_from, grn_from, unaf_from, other_from, total_from)
+changes_2024
 ```
 
 ```{r}
 # Current registrations
-
+current_2024 <- read_csv("data/current_and_changes.csv") |> 
+  clean_names() |> 
+  select(-address_changes, -name_changes, -dem_from, -rep_from, -nlm_from, -lib_from, -grn_from, -unaf_from, -other_from, -total_from)
+  current_2024
 ```
 
 ## Rinse, Repeat: September 2022 data
@@ -76,60 +86,109 @@ To answer the following questions, you'll need to calculate percentages and do o
 
 ```{r}
 # Party registrations
-
+new_reg_2022 <- read_csv("data/new_reg_2022.csv")
+new_reg_2022
 ```
 
 ```{r}
 # Removals
-
+rem_2022 <- read_csv("data/removals_2022.csv")
+rem_2022
 ```
 
 ```{r}
 # Changes
-
+changes_2022 <- read_csv("data/current_and_changes_2022.csv") |>
+  clean_names() |> 
+  select(county, address_changes, name_changes, dem_from, rep_from, lib_from, grn_from, unaf_from, oth_from, total_from)
+changes_2024
 ```
 
 ```{r}
 # Current registrations
-
+current_2022 <- read_csv("data/current_and_changes_2022.csv")|> 
+  clean_names() |> 
+  select(-address_changes, -name_changes, -dem_from, -rep_from, -lib_from, -grn_from, -unaf_from, -oth_from, -total_from)
+  current_2022
 ```
 
 ## Answer questions
 
 Q1. Calculate the percentage of registered Democrats, Republicans and unaffiliated voters for the entire state in September 2024 and September 2022, and then calculate the percentage change for those three party categories (the formula for percentage change is easy to remember: (New-Old)/Old). How would you describe the changes in these partisan categories in a story? What's the most interesting thing about these changes that would be the lede of that story?
 
-A1.
+A1. Overall, there has been a shift towards unaffiliated voters, as both Dems and Reps lost registrants.
 
 ```{r}
+percent_2024 <- current_2024 |> 
+  mutate(perc_dem_2024 = dem/total*100, 
+         perc_rep_2024 = rep/total*100, 
+         perc_unaf_2024 = unaf/total*100) |> 
+  select(county, perc_dem_2024, perc_rep_2024, perc_unaf_2024)
+percent_2024
+```
+```{r} 
+percent_2022 <- current_2022 |> 
+  mutate(perc_dem_2022 = dem/total*100, 
+         perc_rep_2022 = rep/total*100, 
+         perc_unaf_2022 = unaf/total*100) |> 
+  select(county, perc_dem_2022, perc_rep_2022, perc_unaf_2022)
+percent_2022
+```
+```{r} 
+
+#(New-Old)/Old
+percent_change <- percent_2022 |> 
+  inner_join(percent_2024)|> 
+  mutate(percent_change_dem = ((perc_dem_2024-perc_dem_2022)/perc_dem_2022*100),
+         percent_change_rep = ((perc_rep_2024-perc_rep_2022)/perc_rep_2022*100),
+         percent_change_unaf = ((perc_unaf_2024-perc_unaf_2022)/perc_unaf_2022*100)) |> 
+  select(county, percent_change_dem, percent_change_rep, percent_change_unaf)
+
+percent_change
+ 
 
 ```
-
 Q2. Among the Maryland jurisdictions with the most registered voters, which one had the biggest percentage increase in unaffiliated voters between 2022 and 2024? How did that county vote for governor in 2022 and for president in 2020? Contrast the partisan percentages of that county with the county that had the eighth-largest percentage increase in unaffiliated voters. You should display information from the data that shows the counties with the largest percentage increase first.
 
-A2.
-
+A2.Prince George's County saw a huge increase in unaffiliated voters, with a 15% uptick. In 2022 and 2020, though, PG county voted OVERWHELMINGLY in favor of Democrats. Howard County was eighth. It, like PG, is more Democratic, but less so than PG. More of their flight to unaffiliated came from Republicans, while Republicans actually gained ground in PG.
 ```{r}
-
+percent_change |> 
+  arrange(desc(percent_change_unaf))
 ```
 
 Q3. Do the party percentages of new registrants (% Dem, % Rep, % Unaffiliated) from September 2024 and September 2022 match the overall percentage of partisan registration in the state at those times?
 
 In other words, did new registrants mirror the overall partisan composition of the electorate, or were they different? Do any of the methods of registration vary significantly from the overall partisan pattern? Which method is worthy of further exploration?
 
-A3.
+A3.Roughly, yes, but a slightly higher percentage of the new registrants are unaffiliated. The MVA and online seem to have a far higher percentage of unaffiliated; perhaps they both warrant more exploration.
 
 ```{r}
-
+percent_2022
 ```
-
+```{r}
+percent_2024
+```
 Q4. Choose your own adventure! Using both the 2024 and 2022 data for one of the dataframes (changes, removals or new registrations), ask and answer a question that makes at least one comparison and requires code to answer. That could involve calculating a percentage, percentage change or the raw difference between two columns.
 
-A4.
+A4. My question is the percent change in new mail-in-ballot new dem registrants between 2022 and 2024 in the state. The old value is 54.44, new is 61.48, meaning there has been a 12.9% increase in the percentage of new dem registrants that register via mail.
 
 ```{r}
-
+percent_new_2024 <- new_reg_2024 |> 
+  mutate(perc_newdem_2024 = DEM/TOTAL*100, 
+         perc_newrep_2024 = REP/TOTAL*100, 
+         perc_newunaf_2024 = UNAF/TOTAL*100) |> 
+  select(...1, perc_newdem_2024, perc_newrep_2024, perc_newunaf_2024)
+percent_new_2024
+```
+```{r}
+percent_new_2022 <- new_reg_2022 |> 
+  mutate(perc_newdem_2022 = DEM/TOTAL*100, 
+         perc_newrep_2022 = REP/TOTAL*100, 
+         perc_newunaf_2022 = UNAF/TOTAL*100) |> 
+  select(SUMMARY, perc_newdem_2022, perc_newrep_2022, perc_newunaf_2022)
+percent_new_2022
 ```
 
 Q5. What's the best story idea or question you've seen as a result of the work you've done in this lab?
 
-A5.
+A5.I think the best story is a general flight towards unaffiliated voters in Maryland, which might represent some level of disillusionment with the Dem. Party. This is especially pertinent now, as it might be affecting the Senate race between Hogan and Alsobrooks.

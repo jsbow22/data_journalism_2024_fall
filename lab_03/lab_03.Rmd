@@ -46,19 +46,32 @@ Q1: Which seven cities in Maryland had the largest *number* of contributions fro
 
 Note: To answer this question, you'll need to see every variation of the "contributor_city" for the top seven cities, which you should identify through some initial analysis. Then find variations of them and change those variations into the most common version.
 
-A1:
+A1:The seven cities that saw the most contributions from donors were Bethesda, Chevy Chase, Baltimore, Annapolis, Potomac, Silver Spring, Rockville and Ellicott City. They have 1,117, 704, 692, 493, 491, 408, 359 and 174 (oops I did 8).
 
 ```{r}
-
 md_contribs |> 
-  group_by(contributor_city) |> 
-  summarise(contributions = n()) |> 
-  mutate(contributor_city = case_when(
+  group_by(contributor_city) |>
+  summarise(contributions = n()) |>
+  arrange(desc(contributions))
+```
+
+```{r}
+md_contribs |> 
+    mutate(contributor_city = case_when(
     contributor_city == "BALRIMORE" | contributor_city == "BLATIMORE" ~ "BALTIMORE",
+      contributor_city == "ANAPOLIS" | contributor_city == "ANNAPOLIS JUNCTION" ~ "ANNAPOLIS",
+    contributor_city == "ELLICOTT" ~ "ELLICOTT CITY",
+    contributor_city == "POTAMIC" ~ "POTOMAC",
+    contributor_city == "ROCKWELL" ~ "ROCKVILLE",
+    contributor_city == "SILVER SPRINGS" ~ "SILVER SPRING",
     TRUE ~ contributor_city
-  ))
-arrange(desc(contributions()) |>
- 
+    
+  )) |>
+  group_by(contributor_city) |> 
+  summarise(contributions = n()) |>
+arrange(desc(contributions))
+
+
 
 ```
 
@@ -66,16 +79,34 @@ Q2: Find the 5-digit ZIP code in Maryland that had the highest total amount of c
 
 Where is that zip code and what kind of area is it, demographically? Which committee is the largest recipient of money from that zip code? How many of the top five recipients are Maryland candidates?
 
-A2:
+A2: The zip code with the most is 20815. This applies to Chevy Chase, which is one of the richest areas of Maryland.The largest recipient of money from the zip is Elfreth for MD. All of the top 5 are MD candidates.
 
 ```{r}
+cleaned_md_contribs <- md_contribs |>
+  mutate(contributor_zip = str_sub(contributor_zip, start=1L, end=5L))
+
+cleaned_md_contribs
+```
+```{r} 
+cleaned_md_contribs |> 
+  group_by(committee_name, contributor_zip = "20815") |>
+summarise(contributions = n()) |>
+  arrange(desc(contributions))
 
 ```
-
+```{r} 
+cleaned_md_contribs |> 
+  group_by(contributor_zip) |>
+summarise(contributions = n()) |>
+  arrange(desc(contributions))
+```
 Q3: Let's look at top individual donors. Write code to generate a list of top donors using name and city, adding up the total amount of contributions. What does the original data say about the top two donors - who are they and what do they do? Do you see anything in the list of top 10 donors that would make you uncertain about the accuracy of these results?
 
-A3:
+A3:The top two donors are Daniel Kracov and Margaret Allen. They both work in finance. I don't see anything that makes me uncertain about accuracy, except maybe thart Kracov doubles anyone else.
 
 ```{r}
-
+cleaned_md_contribs |> 
+  group_by(contributor_name, contributor_city, contributor_employer) |>
+summarise(contributions = n()) |>
+  arrange(desc(contributions))
 ```
