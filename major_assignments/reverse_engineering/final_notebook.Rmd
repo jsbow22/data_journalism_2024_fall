@@ -35,12 +35,22 @@ library(janitor)
 
 In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
 
+## Analysis 
+We had no problems with our data, other than some issues up front. The CNS story never specifically notes what data they're working with, but we gathered (through trial and error) that it was the yearly filing from the beginning of 2022. We had no issues actually working with. In terms of basic data dictionary, we broke each candidate down into a file of their total contribs, titled xx_contribs, and one that was their Maryland contribs, or xx_contribs_md.
 ```{r}
-# Load required data
+moore_contribs <- clean_names(read_csv("data/moore_contribs.csv"))
 
-# Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
+moore_contribs_md <- clean_names(read_csv("data/moore_contribs_md.csv"))
 
-# Clean required data and prepare for analysis if needed. 
+perez_contribs <- clean_names(read_csv("data/perez_contribs.csv"))
+
+perez_contribs_md <- clean_names(read_csv("data/perez_contribs_md.csv"))
+
+king_contribs <- clean_names(read_csv("data/king_contribs.csv"))
+
+king_contribs_md <- clean_names(read_csv("data/king_contribs_md.csv"))
+
+franchot_contribs <- clean_names(read.csv("data/franchot_contribs.csv"))
 
 ```
 
