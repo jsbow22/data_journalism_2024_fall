@@ -38,7 +38,7 @@ What do you think the story here is? Put the answer below along with the URL of 
 
 ```{r}
 md_votes_by_type <- clean_names(read_csv("data/md_votes_by_type.csv")) |>
-  ##CREATING PERCENTAGES
+  ##CREATING PERCENTAGES FOR THING
   mutate(pct_early=early/total*100) |>
   mutate(pct_election_day=election_day/total*100) |>
   mutate(pct_mail=mail/total*100)
