@@ -21,6 +21,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # load libraries here
+library(tidyverse)
+library(janitor)
+library(tidycensus)
 ```
 
 ## Questions
@@ -31,9 +34,17 @@ HINT: In Datawrapper's "Check and Describe" tab, you can click on a column to ge
 
 What do you think the story here is? Put the answer below along with the URL of your chart.
 
-**A1.**
+**https://datawrapper.dwcdn.net/CINOQ/1/ I think the story is that, while it is far down from where it was during the pandemic, mail-in voting is way up from where it was pre-pandemic.**
 
 ```{r}
+md_votes_by_type <- clean_names(read_csv("data/md_votes_by_type.csv")) |>
+  ##CREATING PERCENTAGES
+  mutate(pct_early=early/total*100) |>
+  mutate(pct_election_day=election_day/total*100) |>
+  mutate(pct_mail=mail/total*100)
+write_csv(md_votes_by_type, "data/md_votes_by_type.csv")
+
+md_votes_by_type
 ```
 
 **Q2.** You've been assigned to track early-voting turnout in Maryland at the county level. To do that, use [data from the state](https://elections.maryland.gov/press_room/2024_stats/PG24/EarlyVoting%20RAW%20data.csv). YOU DO NOT NEED TO LOAD THIS FILE. I've created several CSV files from it; each has a row for each day, with the counties as columns, so you can track early voting turnout in certain categories. The available files in the data folder are:
@@ -57,9 +68,17 @@ Your chart MUST:
 
 Tell me below why you picked the CSV you did. If you made any changes to the data, put that code below.
 
-**A2.** 
+**I chose Republican early voting data because generally early and mail-in voting is associated with Democrats, so I wanted to investigate the early voting patterns of the opposite party. https://datawrapper.dwcdn.net/5RISM/1/** 
 
 ```{r}
+ev_totals_rep <- clean_names(read_csv("data/ev_totals_rep.csv")) |>
+  ##SELECTING CATEGORIES I WANT
+  select(day, anne_arundel, baltimore_city, baltimore_county, carroll, charles, frederick, harford, howard, montgomery, prince_georges) |>
+ ##MAKING THE TOTAL
+   mutate(total=anne_arundel+baltimore_city+baltimore_county+carroll+charles+frederick+harford+howard+montgomery+prince_georges)
+write_csv(ev_totals_rep, "data/ev_totals_rep.csv")
+
+ev_totals_rep
 ```
 
 **Q3.** After reading the recent CNN story about fundraising called "[How elderly dementia patients are unwittingly fueling political campaigns](https://www.cnn.com/interactive/2024/10/politics/political-fundraising-elderly-election-invs-dg/)," you decide to dig into the habits of Maryland political donors who give money via ActBlue and WinRed.
@@ -79,7 +98,31 @@ Then export each dataframe using `write_csv` and make two (2) choropleth maps in
 
 Compare the two maps. What do you think are the most interesting story ideas in both, and what would you want to know more about? Put the answer below along with the URLs of your maps.
 
-**A3.** 
+**Republican: https://datawrapper.dwcdn.net/9rmxD/2/ Dem: https://datawrapper.dwcdn.net/mdoku/2/ I think the most ineresting story idea when comparing the two maps is how Republican donations seem to be more spread out, while Democratic donations are concentrated in a predictable, high-population area (suburbs of DC). Specifically with the Republicans, I think it's interesting how many donations come from one zip code around Hagerstown; could be worth looking into. I would also love to compare the donation numbers with how Hogan performed in different Zip codes, especially because I think, given his moderate appeal, it might not be a one-to-one. ** 
 
 ```{r}
+md_population_by_zip_22 <- get_acs(geography = "zcta", variables = c(population="B01001_001"), year = 2022) |>
+  rename(zip=GEOID)
+md_winred_zip_totals <- clean_names(read_csv("data/md_winred_zip_totals.csv")) |>
+  mutate(zip=as.character(zip)) |>
+  left_join(md_population_by_zip_22, join_by(zip)) |>
+  mutate(per_capita_donations=donations/estimate*1000) |>
+  select(zip, donations, estimate, moe, per_capita_donations) |>
+  rename(winred_donations=donations) |>
+  filter(estimate!=0, estimate!="NA") |>
+  arrange(desc(per_capita_donations))
+write_csv(md_winred_zip_totals, "data/md_winred_zip_totals.csv")
+
+md_actblue_zip_totals <- clean_names(read_csv("data/md_actblue_zip_totals.csv")) |>
+  mutate(zip=as.character(zip)) |>
+  left_join(md_population_by_zip_22, join_by(zip)) |>
+  mutate(per_capita_donations=donations/estimate*1000) |>
+  select(zip, donations, estimate, moe, per_capita_donations) |>
+  rename(actblue_donations=donations) |>
+  filter(estimate!=0, estimate!="NA") |>
+  arrange(desc(per_capita_donations))
+write_csv(md_actblue_zip_totals, "data/md_actblue_zip_totals.csv")
+
+md_winred_zip_totals
+md_actblue_zip_totals
 ```
