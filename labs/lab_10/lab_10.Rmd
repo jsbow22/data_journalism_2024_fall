@@ -174,7 +174,7 @@ md_senate_24_gov_18_county <- md_gov_county_18 |>
   rename(total_18=total.x) |>
   rename(hogan_24=hogan.y) |>
   rename(total_24=total.y) |>
-  #ADDED THE X'S AND Y'S FOR DIFFERENTIATION
+  #FIXING SOME OF THE NAMES FROM THE JOIN
   select(county, hogan_18, total_18, hogan_pct_18, hogan_24, total_24, hogan_pct_24, geometry) |>
   mutate(hogan_years_diff=hogan_pct_24-hogan_pct_18)
 
