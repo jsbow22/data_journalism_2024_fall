@@ -136,17 +136,102 @@ md_counties |>
 ```
 **Q3** Make another map showing the difference between Larry Hogan's county-level performance this year and from his governor race in 2018, using percentages to compare the two as you did in Q2. You can use the dataframe you initially loaded for Q1, and you'll need to load the 2018 governor results in the data folder and join them to it before proceeding. Are there any counties where Hogan did better this year? How would you describe the map showing the difference?
 
-**A3**
+**I think that the map shows that there are no counties in which Hogan performed better in 2024 than in 2018. I did have some issues with Saint mary's County, though I am not sure why; I checked the two dataframes I used and I believe they are named the same thing, so I'm not sure why that county is not showing up. The map showing the difference shows that Hogan did about 4-18% worse in all of the counties across the state.**
 
 ```{r}
+md_senate_county_24 <- clean_names(read_csv("data/md_senate_county_24.csv")) |>
+  mutate(total=alsobrooks+hogan+scott) |>
+  mutate(alsobrooks_pct=alsobrooks/total*100) |>
+  mutate(hogan_pct=hogan/total*100) |>
+  mutate(alsobroooks_hogan_diff=alsobrooks_pct-hogan_pct) |>
+  rename(hogan_pct_24=hogan_pct)
+md_senate_county_24
+```
+
+```{r}
+ ##NOW TO CREATE TOTAL, GET HOGAN PERCENTAGE FOR 2018
+md_gov_county_18 <- clean_names(read_csv("data/md_gov_county_18.csv")) |>
+  mutate(total=hogan+jealous+quinn+schlakman+write_ins) |>
+  mutate(hogan_pct_18=hogan/total*100)
+
+md_gov_county_18 <- md_gov_county_18 |>
+  left_join(md_senate_county_24, join_by(geoid)) |>
+  rename(county=county.x)
+md_gov_county_18
+```
+```{r} 
+md_county_population <- clean_names(md_county_population)
+md_county_population
+```
+
+```{r}
+
+md_gov_county_18 <- md_county_population |>
+  full_join(md_gov_county_18)
+
+md_senate_24_gov_18_county <- md_gov_county_18 |>
+  rename(hogan_18=hogan.x) |>
+  rename(total_18=total.x) |>
+  rename(hogan_24=hogan.y) |>
+  rename(total_24=total.y) |>
+  #ADDED THE X'S AND Y'S FOR DIFFERENTIATION
+  select(county, hogan_18, total_18, hogan_pct_18, hogan_24, total_24, hogan_pct_24, geometry) |>
+  mutate(hogan_years_diff=hogan_pct_24-hogan_pct_18)
+
+md_counties |>
+  ggplot() +
+  geom_sf(data=md_senate_24_gov_18_county, aes(fill=hogan_years_diff)) +
+  theme_minimal()
 ```
 
 **Q4.** Choose your own map adventure! In the data folder I've included Maryland county-level results for the abortion rights amendment vote this year, plus the 2020 presidential results by county and 2022 governor's results by county. Using one of those and at least one other contest for comparison, make a county-level map showing what you think is the most interesting aspect of that data, and describe the results in terms of a possible story. You can bring in other data, such as Census information, if you like.
 
-**A4.**
+**To answer this question, I was inspired by the story I saw in the Baltimore Banner. I saw that Trump did better in every county in MD in 2024 than he did in 2020, so I wanted to see if I could reproduce those findings, especially because I may be writing a story about that for CNS. I think the way that I would go about disecting this data, and the way I will go about dissecting this data in my story, is understanding demographic shifts towards Trump. I think it's fascinating that, in a year where people thought Democratic voter turnout would show up, even the most liberal counties in MD, such as Montgomery, shifted towards Trump. I would analyze which counties saw the biggest shifts, but also which (like Montgomery) saw the most intriguing shifts. I would also compare this with other counties in other states, seeing if Maryland's shift mirrors the shifts that were seen across the nation in favor of Trump.**
+
+```{r}
+md_pres_county_20 <- clean_names(read_csv("data/md_pres_county_20.csv")) |>
+  mutate(total_20=trump+biden+jorgensen+hawkins+segal) |>
+  mutate(trump_pct_20=trump/total_20*100) |>
+  rename(trump_20=trump)
+md_pres_county_20
+```
+```{r}
+#CLEANING NAMES OF PRESIDENTIAL PERCENTAGE THING I DID ABOVE SO THAT THE NAMES MATCH
+md_pres_pct <- clean_names(md_pres_pct)
+md_pres_pct
+```
+
+```{r}
+##JOINING IT WITH THE PRESIDENTIAL PERCENTAGES DATA SET THAT I MADE UP ABOVE
+md_pres_county_20 <- md_pres_county_20 |>
+  left_join(md_pres_pct, join_by(geoid)) |>
+  #NAME FIX
+  rename(county=county.x)
+```
+
+```{r}
+##FULL JOINING FOR GEOMETRY DATA STUFF
+md_pres_county_20 <- md_county_population |>
+  full_join(md_pres_county_20)
+md_pres_county_20
+```
+
+```{r}
+#CREATING NEW DATA SET W A NEW NAME, SOME RENAMED COLUMNS, AND SOME MUTATION TO SHOW SHIFT TOWARDS TRUMP
+md_trump_county_combined <- md_pres_county_20 |>
+  rename(trump_24=trump) |>
+  rename(total_24=total) |>
+  rename(trump_pct_24=trump_pct) |>
+  select(county, trump_20, total_20, trump_pct_20, trump_24, total_24, trump_pct_24, geometry) |>
+  mutate(trump_diff=trump_pct_24-trump_pct_20)
+```
 
 ```{r}
 
+md_counties |>
+  ggplot() +
+  geom_sf(data=md_trump_county_combined, aes(fill=trump_diff)) +
+  theme_minimal()
 ```
 
 -30-
