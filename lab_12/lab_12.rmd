@@ -104,7 +104,7 @@ md_attorney_sanctions_trigrams
 
 **Q3.** Let's drop back down to more traditional text analysis - take the top trigram from Q2 and write code to see how many times it occurs in the text column in each fiscal year. What do you think the answer produced by your code suggests? What else could you do to try and clarify the most important reasons attorneys get sanctioned?
 
-**My results don't seem to show a discernable pattern. There is a spike between 2019 and 2022, but I can't think of why (I even asked my dad, who is an attorney). I think to clarify my results, I should probably take a harder look at my stop words to see if I am leaving anything out that might make more sense. ** 
+**My results don't seem to show a discernable pattern. There is a spike between 2019 and 2022, but I can't think of why (I even asked my dad, who is an attorney). Only pattern is that it has happened more since 2017 than before. I think to clarify my results, I should probably take a harder look at my stop words to see if I am leaving anything out that might make more sense. ** 
 
 ```{r}
 top_result <- "conduct involving dishonesty"
